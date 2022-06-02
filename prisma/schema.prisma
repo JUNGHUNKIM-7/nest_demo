@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //1
+  profile Profile?
+
+  //2
+  posts Post[]
+}
+
+model Profile {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  firstName String?
+  lastName  String?
+
+  //1
+  userId String @unique @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Tag {
+  id  String  @id @default(auto()) @map("_id") @db.ObjectId
+  seasons Seasons[]
+
+  //3
+  postIds String[] @db.ObjectId
+  posts   Post[]   @relation(fields: [postIds], references: [id])
+}
+
+model Post {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  title String
+  body  String
+
+  //2
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  //3
+  tagIds String[] @db.ObjectId
+  tags   Tag[]    @relation(fields: [tagIds], references: [id])
+}
+
+enum Seasons {
+  SPRING
+  SUMMER
+  AUTHUM
+  WINTER
+}
